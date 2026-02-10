@@ -61,3 +61,28 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         _______,            _______,  _______,  _______,  _______,  BAT_LVL,  _______,  _______,  _______,  _______,  _______,            _______,  _______,  _______,
         _______,  _______,  _______,                                _______,                                _______,  _______,  _______,  _______,  _______,  _______)
 };
+// clang-format on
+
+// When Ctrl is held, Space becomes Shift instead of emitting a space character.
+// This lets Tab (LCTL_T) + Space produce Ctrl+Shift combos without needing a
+// mod-tap on Space (which causes accidental Shifts during fast typing).
+static bool space_shift_active = false;
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode == KC_SPC) {
+        if (record->event.pressed) {
+            if (get_mods() & MOD_MASK_CTRL) {
+                register_mods(MOD_LSFT);
+                space_shift_active = true;
+                return false;
+            }
+        } else {
+            if (space_shift_active) {
+                unregister_mods(MOD_LSFT);
+                space_shift_active = false;
+                return false;
+            }
+        }
+    }
+    return true;
+}
